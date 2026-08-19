@@ -125,3 +125,21 @@ node scripts/doctor-cli.mjs   # 实际自检
 ## 许可
 
 BSD-3-Clause
+
+## MCP 生态桥（供给面）
+
+把外部 MCP server 的工具映射成 DSH 工具（**Experimental，平台不背书**——市场哲学·特殊通道）：
+
+- 手写 JSON-RPC over stdio（零依赖），支持 `initialize / tools/list / tools/call`
+- 白名单即配置 `mcpServers`：只连接显式列出的 server（不任意连远程）
+- 工具名加 `[server]_` 前缀防冲突；inputSchema（JSON Schema）→ DSH 参数自动映射
+- 工具注册带超时护栏（挂起 → ETIMEOUT 可捕获）
+
+```js
+// 配置（cordis.patch.yml 的 config 或 DEFAULT_CONFIG）
+mcpServers: [
+  { name: 'filesystem', command: 'npx', args: ['-y', '@modelcontextprotocol/server-filesystem', '/tmp'] },
+]
+```
+
+> 桥接内容来源不可本地校验 → 一律 Experimental + 白名单；评审核过才升 Verified。
