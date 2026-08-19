@@ -53,6 +53,20 @@ super-injector registry 可达性、plugin-hub 自身服务。
 
 > 平台不替用户做"能不能用"的裁判：合规门槛 + 徽章给足信息，fail-soft 兜住风险（装坏也不挡服务拉起）。
 
+### 合规徽章 = 自动校验生成（不靠人工标注）
+
+`Compliant` 徽章不是写死在目录里的——市场展示/上架时用 `dsh-plugin-standard` 的
+`verify-plugin` **自动校验**生成（0 MUST 违规 = 合规，否则标注 `Not-Compliant`）：
+
+- 商品有本地工作区目录 → 直接对本地校验；
+- 远程/npm 源 → `npm pack` 到临时目录后校验；
+- 结果按 `(package, version)` 缓存 5 分钟，避免每次展示都跑校验。
+
+```bash
+# 独立校验一个插件目录
+node node_modules/dsh-plugin-standard/scripts/verify-plugin.mjs <插件目录> --json
+```
+
 ## HTTP API（市场 + 平台）
 
 - `GET /api/plugin-hub/health` → `{ ok, service, version }`

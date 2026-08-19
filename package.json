@@ -1,6 +1,6 @@
 {
   "name": "@lanbaolu/dsh-plugin-hub",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "DSH 插件治理平台：平台层安装器 + suite:doctor + 市场服务（目录/徽章/安装/隔离/恢复）+ 进程级启动包装器 + 超时护栏。插件错误绝不影响服务拉起。",
   "type": "module",
   "main": "./lib/index.js",
@@ -46,7 +46,8 @@
     "./catalog": "./lib/catalog.js",
     "./timeout-guard": "./lib/timeout-guard.js",
     "./package.json": "./package.json",
-    "./client": "./lib/client.js"
+    "./client": "./lib/client.js",
+    "./compliance": "./lib/compliance.js"
   },
   "dsh": {
     "bundle": {

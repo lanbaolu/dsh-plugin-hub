@@ -17,6 +17,7 @@ function makeDeps(over = {}) {
     spawnInstall: () => ({ ok: true }),
     quarantinePlugin: (id, name) => ({ ok: true, id, name }),
     removePatchEntry: (id) => ({ ok: true, id }),
+    checkCompliance: async () => ({ compliant: true, failCount: 0 }),
     ...over,
   }
 }
@@ -92,4 +93,25 @@ test('status: 返回目录 + 安装/隔离状态', async () => {
   const mneme = list.find((p) => p.id === 'mneme')
   assert.equal(mneme.installed, false)
   assert.ok(mneme.badges.includes('Compliant'))
+})
+
+test('status: 非合规商品 → Not-Compliant 徽章 + compliance 明细', async () => {
+  const market = createMarket(makeDeps({
+    checkCompliance: async (item) => ({ compliant: false, failCount: 2, fails: ['2.1.2 exports 缺失'], package: item.package }),
+  }))
+  const list = await market.status()
+  const item = list.find((p) => p.id === 'mneme')
+  assert.ok(item.badges.includes('Not-Compliant'))
+  assert.ok(!item.badges.includes('Compliant'))
+  assert.equal(item.compliance.failCount, 2)
+})
+
+test('status: checkCompliance 抛错 → 容错为 Not-Compliant', async () => {
+  const market = createMarket(makeDeps({
+    checkCompliance: async () => { throw new Error('校验器不可用') },
+  }))
+  const list = await market.status()
+  const item = list.find((p) => p.id === 'mneme')
+  assert.ok(item.badges.includes('Not-Compliant'))
+  assert.equal(item.compliance, null)
 })
