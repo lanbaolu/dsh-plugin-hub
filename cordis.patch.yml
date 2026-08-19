@@ -1,0 +1,6 @@
+# @lanbaolu/dsh-plugin-hub bundle 层：插入平台服务（doctor / health + 市场入口）。
+# 平台层随套件安装；功能插件是市场内容，不在此声明。
+- insert:
+    - id: dsh-plugin-hub
+      name: '@lanbaolu/dsh-plugin-hub'
+      config: {}

@@ -1,0 +1,52 @@
+{
+  "name": "@lanbaolu/dsh-plugin-hub",
+  "version": "0.1.0",
+  "description": "DSH 插件治理平台：平台层安装器（installer）+ suite:doctor 健康自检 + 市场服务入口。装完即可安全安装/管理任意插件，插件错误绝不影响服务拉起。",
+  "type": "module",
+  "main": "./lib/index.js",
+  "files": [
+    "lib",
+    "scripts",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "license": "BSD-3-Clause",
+  "homepage": "https://github.com/lanbaolu/dsh-plugin-hub#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lanbaolu/dsh-plugin-hub.git"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "plugin-hub",
+    "marketplace",
+    "doctor",
+    "installer",
+    "fail-soft"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",
+    "@lanbaolu/dsh-fail-soft": ">=0.1.0 <2"
+  },
+  "scripts": {
+    "test": "node --test",
+    "doctor": "node scripts/doctor-cli.mjs",
+    "install": "node scripts/install.mjs"
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./doctor": "./lib/doctor.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
