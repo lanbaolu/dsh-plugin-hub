@@ -41,15 +41,45 @@ node scripts/doctor-cli.mjs --json   # 纯 JSON（供市场 UI / 脚本消费）
 检查项：fail-soft 内核补丁健康（复用 `@lanbaolu/dsh-fail-soft` 的 `getPatchStatus`）、
 super-injector registry 可达性、plugin-hub 自身服务。
 
-## HTTP API（市场前置门数据源）
+## HTTP API（市场 + 平台）
 
 - `GET /api/plugin-hub/health` → `{ ok, service, version }`
 - `GET /api/plugin-hub/doctor` → 三态 JSON（**市场 UI 安装任何插件前必须确认 `status === "PLATFORM_READY"`**）
+- `GET /api/plugin-hub/catalog` → 市场目录 + 各商品质量徽章与安装/隔离状态
+- `POST /api/plugin-hub/install` `{ id }` → 安装市场插件（**前置门：非 PLATFORM_READY 拒绝**）
+- `POST /api/plugin-hub/quarantine` `{ id, reason? }` → 手动隔离
+- `POST /api/plugin-hub/restore` `{ id }` → 恢复隔离（只删带隔离标记的条目）
 
 ## Agent 工具
 
 - `plugin_hub_doctor`：运行平台健康自检，返回三态与检查明细
 - `plugin_hub_status`：返回 `ready` 布尔（装市场插件前置条件）
+- `plugin_hub_catalog`：市场目录 + 徽章 + 状态
+- `plugin_hub_install` / `plugin_hub_quarantine` / `plugin_hub_restore`：市场安装/隔离/恢复
+
+## 进程级启动包装器（三层金字塔·第 2 层）
+
+```bash
+# 用外层进程拉起 dsh web：崩溃 → 诊断是否插件 → 隔离后带退避自动重拉
+npx dsh-failsoft-web                  # 或 node scripts/failsoft-web.mjs
+npx dsh-failsoft-web -- --port 3080   # 透传参数
+```
+
+- dsh 正常退出(0) → 透传退出
+- dsh 崩溃 + fail-soft 隔离数增加 → 坏插件已被剔除，带退避自动重拉（默认最多 3 次）
+- dsh 崩溃 + 无新隔离 → 跑 doctor 诊断，疑似非插件问题停止重拉
+
+## 超时护栏（三层金字塔·第 3 层核心）
+
+把"插件挂起"转成可捕获的超时错误（`code: ETIMEOUT`），挂起不再是无响应黑洞：
+
+```js
+import { withTimeout, wrapToolWithTimeout } from '@lanbaolu/dsh-plugin-hub/timeout-guard'
+```
+
+- `withTimeout(promise, ms, label)`：给任意 Promise 加超时
+- `wrapToolWithTimeout(tool, ms)`：给 DSH 工具定义加超时（元数据不变）
+- 平台自身工具默认 `toolTimeoutMs: 120000`（可配置）
 
 ## 平台层组成（随本包一起装配）
 
@@ -57,12 +87,12 @@ super-injector registry 可达性、plugin-hub 自身服务。
 |---|---|
 | `@lanbaolu/dsh-fail-soft` | 容错底座：坏/不兼容插件自动隔离，服务照常拉起（第一原则承载层） |
 | `@dsh-external/dsh-super-injector` | 运维底座：运行时注入 / 热重载 / 生产线 |
-| `@lanbaolu/dsh-plugin-hub` | 本包：installer + doctor + 市场服务入口 |
+| `@lanbaolu/dsh-plugin-hub` | 本包：installer + doctor + 市场服务 + 进程级兜底 + 超时护栏 |
 
 ## 开发
 
 ```bash
-npm test                 # doctor 三态单测
+npm test                 # 30 用例（doctor/启动包装器/超时护栏/市场）
 node scripts/doctor-cli.mjs   # 实际自检
 ```
 

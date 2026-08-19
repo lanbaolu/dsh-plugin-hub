@@ -1,7 +1,7 @@
 {
   "name": "@lanbaolu/dsh-plugin-hub",
-  "version": "0.1.0",
-  "description": "DSH 插件治理平台：平台层安装器（installer）+ suite:doctor 健康自检 + 市场服务入口。装完即可安全安装/管理任意插件，插件错误绝不影响服务拉起。",
+  "version": "0.2.0",
+  "description": "DSH 插件治理平台：平台层安装器 + suite:doctor + 市场服务（目录/徽章/安装/隔离/恢复）+ 进程级启动包装器 + 超时护栏。插件错误绝不影响服务拉起。",
   "type": "module",
   "main": "./lib/index.js",
   "files": [
@@ -33,11 +33,15 @@
   "scripts": {
     "test": "node --test",
     "doctor": "node scripts/doctor-cli.mjs",
-    "install": "node scripts/install.mjs"
+    "install": "node scripts/install.mjs",
+    "failsoft-web": "node scripts/failsoft-web.mjs"
   },
   "exports": {
     ".": "./lib/index.js",
     "./doctor": "./lib/doctor.js",
+    "./market": "./lib/market.js",
+    "./catalog": "./lib/catalog.js",
+    "./timeout-guard": "./lib/timeout-guard.js",
     "./package.json": "./package.json"
   },
   "dsh": {
@@ -48,5 +52,8 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "bin": {
+    "dsh-failsoft-web": "./scripts/failsoft-web.mjs"
   }
 }
