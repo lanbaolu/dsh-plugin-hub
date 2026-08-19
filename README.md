@@ -41,6 +41,18 @@ node scripts/doctor-cli.mjs --json   # 纯 JSON（供市场 UI / 脚本消费）
 检查项：fail-soft 内核补丁健康（复用 `@lanbaolu/dsh-fail-soft` 的 `getPatchStatus`）、
 super-injector registry 可达性、plugin-hub 自身服务。
 
+## 市场分级（门槛 / 价签 / 特殊通道）
+
+市场**不是"只收合格"也不是"什么都收"**，而是分层：
+
+| 层 | 规则 | 徽章 |
+|---|---|---|
+| 门槛（MUST） | 上架商品必须过合规校验（0 MUST 违规） | `Compliant` |
+| 分级（SHOULD） | 过门槛后按可信度分级，用户知情决策 | `Verified` > `Stable` > `Experimental` |
+| 特殊通道（例外） | COMPAT（版本托底）/ 桥接内容（MCP/skills）不满足完整合规，明确标注**平台不背书** | `COMPAT` / `Experimental` |
+
+> 平台不替用户做"能不能用"的裁判：合规门槛 + 徽章给足信息，fail-soft 兜住风险（装坏也不挡服务拉起）。
+
 ## HTTP API（市场 + 平台）
 
 - `GET /api/plugin-hub/health` → `{ ok, service, version }`
