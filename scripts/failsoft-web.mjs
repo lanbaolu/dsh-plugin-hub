@@ -33,11 +33,23 @@ function argValue(name) {
 const PROFILE = process.env.DSH_PROFILE ?? 'web'
 const MAX_RESTARTS = Number(argValue('--max-restarts') ?? 3)
 const BACKOFF_MS = Number(argValue('--backoff-ms') ?? 2000)
+const DSH_BIN = argValue('--dsh') ?? null // 显式 dsh bin.js（App 内建用）；缺省走 PATH 的 dsh 命令
 const DASH = process.argv.indexOf('--')
 const WEB_ARGS = DASH >= 0 ? process.argv.slice(DASH + 1) : []
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const log = (m) => process.stdout.write(`[failsoft-web] ${m}\n`)
+
+// ── 信号转发：App 退出时终止子 dsh（包装器本身不吞信号）──
+const children = new Set()
+for (const sig of ['SIGTERM', 'SIGINT']) {
+  process.on(sig, () => {
+    log(`收到 ${sig}，转发给 dsh 子进程`)
+    for (const c of children) { try { c.kill(sig) } catch { /* ignore */ } }
+    // 留 2s 让 dsh 收尾，随后退出
+    setTimeout(() => process.exit(0), 2000)
+  })
+}
 
 function profileDir() {
   return join(homedir(), '.dsh', 'profiles', PROFILE)
@@ -97,9 +109,14 @@ async function main() {
   log(`启动前 fail-soft 隔离数：${lastQuarantine}`)
 
   for (;;) {
-    const child = spawn('dsh', ['web', ...WEB_ARGS], { stdio: 'inherit' })
-    log(`dsh web 已拉起（pid ${child.pid ?? '?'}）`)
+    // 显式 dsh bin.js → 用 node 执行；否则走 PATH 的 dsh 命令
+    const cmd = DSH_BIN ? process.execPath : 'dsh'
+    const cmdArgs = DSH_BIN ? [DSH_BIN, 'web', ...WEB_ARGS] : ['web', ...WEB_ARGS]
+    const child = spawn(cmd, cmdArgs, { stdio: 'inherit' })
+    children.add(child)
+    log(`dsh web 已拉起（pid ${child.pid ?? '?'}${DSH_BIN ? `, bin=${DSH_BIN}` : ''}）`)
     const code = await new Promise((resolve) => child.on('close', resolve))
+    children.delete(child)
 
     const nowQuarantine = await quarantineCount()
     const quarantinedNew = nowQuarantine >= 0 && lastQuarantine >= 0 ? nowQuarantine - lastQuarantine : 0
