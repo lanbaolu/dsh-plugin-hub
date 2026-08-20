@@ -70,7 +70,7 @@
     "provenance": true
   },
   "bin": {
-    "dsh-failsoft-web": "./scripts/failsoft-web.mjs"
+    "dsh-failsoft-web": "scripts/failsoft-web.mjs"
   },
   "devDependencies": {
     "tsdown": "^0.22.14",
