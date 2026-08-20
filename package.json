@@ -1,7 +1,7 @@
 {
   "name": "@lanbaolu/dsh-plugin-hub",
-  "version": "0.5.0",
-  "description": "DSH 插件治理平台：平台层安装器 + suite:doctor + 市场服务（目录/徽章/安装/隔离/恢复）+ 进程级启动包装器 + 超时护栏。插件错误绝不影响服务拉起。",
+  "version": "0.6.0",
+  "description": "DSH 插件治理平台：平台层安装器 + suite:doctor + 市场服务（目录/徽章/安装/隔离/恢复）+ 进程级启动包装器 + 超时护栏 + MCP/Skills 生态桥 + 自进化闭环骨架。插件错误绝不影响服务拉起。",
   "type": "module",
   "main": "./lib/index.js",
   "files": [
@@ -49,7 +49,9 @@
     "./client": "./lib/client.js",
     "./compliance": "./lib/compliance.js",
     "./mcp-bridge": "./lib/mcp-bridge.js",
-    "./mcp-client": "./lib/mcp-client.js"
+    "./mcp-client": "./lib/mcp-client.js",
+    "./skills-loader": "./lib/skills-loader.js",
+    "./eval-loop": "./lib/eval-loop.js"
   },
   "dsh": {
     "bundle": {

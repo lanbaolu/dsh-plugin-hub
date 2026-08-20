@@ -143,3 +143,55 @@ mcpServers: [
 ```
 
 > 桥接内容来源不可本地校验 → 一律 Experimental + 白名单；评审核过才升 Verified。
+
+## Skills 生态桥（供给面）
+
+把外部 skill（markdown 指令 + 附带脚本）转成 **DSH 可加载资源**（**Experimental，平台不背书**——市场哲学·特殊通道）：
+
+- 解析 `SKILL.md` frontmatter（`name` / `description` / 其余 metadata）+ 指令段 + 附带脚本/参考路径（`<skill-dir>/scripts/…`、`<skill-dir>/references/…`）
+- 资源格式对齐 DSH 实际扫描约定（`skills/<name>/SKILL.md` + `scripts/` + `references/`），可 `installTo` 物化到目标 skills 目录
+- 白名单即配置 `skillsDirs`：只加载显式列出的目录（**默认空 = 不加载任何 skill，不触碰运行中的 DSH 实例**）
+- 注册点可注入（`registerTo(ctx, { registerResource })`），便于测试与未来适配 DSH 资源 API
+
+```js
+// 配置（cordis.patch.yml 的 config 或 DEFAULT_CONFIG）
+skillsDirs: [
+  '/path/to/my-skill',                    // 目录须含 SKILL.md（可带 scripts/ references/）
+  { name: 'other', dir: '/path/to/other-skill' },
+]
+```
+
+```js
+// 独立使用（加载 + 查看 + 物化，零副作用）
+import { createSkillsBridge } from '@lanbaolu/dsh-plugin-hub/skills-loader'
+
+const bridge = createSkillsBridge({ skillDirs: ['/path/to/my-skill'] })
+console.log(bridge.loadAll())          // 每目录结果（单条失败不阻断）
+console.log(bridge.resources())        // DSH 可加载资源（experimental: true）
+bridge.installTo('/tmp/dsh-skills')    // 物化为 skills/<name>/SKILL.md + scripts + references
+```
+
+> 桥接内容来源不可本地校验 → 一律 Experimental + 白名单；评审核过才升 Verified。
+
+## 自进化闭环（eval-loop，旗舰示例）
+
+最小闭环骨架 `执行 → 观测 → 验证 → 记忆 → 复用`（**默认关闭**，作为市场"旗舰示例"由调用方显式开启）。归属 `lib/eval-loop.js`，依赖注入可独立单测，**任何环节失败不阻断服务拉起**（fail-soft 全程兜底）：
+
+- `createEvalLoop(deps)` + `enable(enabled)` / `onTaskCompleted(task)` / `isEnabled()`
+- ① 触发 → ② 观测（`getTrajectory`，轨迹摘要占位）→ ③ 验证（`verify`，带置信度，默认关闭）→ ④ 记忆（`remember`，mneme 沉淀）
+- **红线：记忆沉淀强制 `{ actor: 'autoDream' }`**（防止 mneme 反思数据被机器写入污染）
+- 反馈护栏：验证置信度低于 `minConfidence`（默认 0.7）→ **只记录不沉淀**（防固化坏经验）；`requireVerification: true` 时未接验证也不沉淀
+- 降级：观测/验证缺失或失败时跳过，记忆仍可写；`remember` 失败也仅记录，不影响整体
+
+```js
+import { createEvalLoop } from '@lanbaolu/dsh-plugin-hub/eval-loop'
+
+const loop = createEvalLoop({
+  minConfidence: 0.7,
+  getTrajectory: async (task) => ({ steps: 5, tokens: 1200, errors: 0 }), // ② 轨迹摘要
+  verify: async (task, summary) => ({ score: 0.9, confidence: 0.85 }),    // ③ 验证（可缺省）
+  remember: (entry, { actor }) => mnemeService.update(entry, { actor }),  // ④ mneme 沉淀
+})
+loop.enable(true)          // 显式开启（默认关闭）
+await loop.onTaskCompleted({ taskId: 't-1', sessionId: 's-1', output: '…' })
+```
