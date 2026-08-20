@@ -1,0 +1,1 @@
+{ "name": "koishi-plugin-demo", "version": "1.0.0", "main": "lib/index.js", "peerDependencies": { "koishi": "^4.15.0" } }

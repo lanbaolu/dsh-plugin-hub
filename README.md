@@ -234,3 +234,19 @@ evalStateDirs:
 # 可选：evalVerifyEnabled: true   # 接 llm-verifier 验证环节（实验性）
 # 可选注入覆盖：evalRemember / evalGetTrajectory / evalVerify
 ```
+
+## Koishi 生态桥（F1 · 特殊通道不背书）
+
+koishi/cordis 生态插件经 **shim + 适配层** 接入 DSH，市场目录已上架两个桥接商品（均标 `Experimental` + `BRIDGE`，**平台不背书**）：
+
+| 商品 | 包 | 作用 |
+|---|---|---|
+| `koishi-bridge` | `@lanbaolu/dsh-koishi-bridge` | 适配层 bundle：把 `koishi-plugin-*` 经 shim 别名加载进 DSH（单条失败不阻断） |
+| `koishi-shim` | `@lanbaolu/dsh-koishi-shim` | `koishi` 包名别名（L0/L1：Schema/makeArray/segment），让 koishi 插件 `require('koishi')` 可解析 |
+
+**装配三步**（详见 `dsh-koishi-bridge/README.md`）：
+1. profile `dependencies` 加别名 `"koishi": "npm:@lanbaolu/dsh-koishi-shim@^0.1.0"`
+2. 装入目标 koishi 插件（如 `koishi-plugin-dialogue`）
+3. `dsh-koishi-bridge` 的 `cordis.patch.yml` 配置 `plugins` 列表
+
+**合规**：源码形态 koishi 插件用 `verify-plugin --koishi` 兼容校验（门槛级 Compliant，非 DSH 原生合规）；桥接内容默认 `Experimental`，评审核过才升 Verified。

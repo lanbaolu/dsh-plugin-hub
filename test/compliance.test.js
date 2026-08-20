@@ -36,6 +36,30 @@ test('runVerify: 目录不存在 → 返回失败', () => {
   assert.ok(r.error)
 })
 
+test('runVerify: koishi 模式 → CJS koishi 插件 compliant（显式 + 自动识别双路径）', () => {
+  const dir = join(HUB_DIR, 'test/fixtures/koishi-plugin-demo')
+  // 显式 koishi 模式
+  const koishi = runVerify(dir, { koishi: true })
+  assert.equal(koishi.compliant, true, '显式 koishi 模式应 compliant')
+  assert.equal(koishi.failCount, 0)
+  assert.equal(koishi.package, 'koishi-plugin-demo')
+  // 自动识别：verify-plugin 检测到 koishi 插件即进兼容模式（普通调用同样 compliant）
+  const auto = runVerify(dir)
+  assert.equal(auto.compliant, true, '自动识别 koishi 插件也应 compliant')
+  assert.equal(auto.failCount, 0)
+})
+
+test('checkCompliance: 商品 koishi:true → 走 --koishi 兼容校验', async () => {
+  const r = await checkCompliance({
+    package: 'koishi-plugin-demo',
+    version: '1.0.0',
+    localDir: join(HUB_DIR, 'test/fixtures/koishi-plugin-demo'),
+    koishi: true,
+  })
+  assert.equal(r.compliant, true)
+  assert.equal(r.failCount, 0)
+})
+
 test('checkCompliance: 商品 localDir 指向本地 → 动态合规', async () => {
   const r = await checkCompliance({ package: '@lanbaolu/dsh-plugin-hub', version: '0.3.0', localDir: HUB_DIR })
   assert.equal(r.compliant, true)
