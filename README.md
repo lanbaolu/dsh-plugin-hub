@@ -195,3 +195,25 @@ const loop = createEvalLoop({
 loop.enable(true)          // 显式开启（默认关闭）
 await loop.onTaskCompleted({ taskId: 't-1', sessionId: 's-1', output: '…' })
 ```
+
+### 与 agent-teams 接线（eval-bridge，最小闭环 ①→④）
+
+`lib/eval-bridge.js` 把 **agent-teams 的持久化团队状态**（`<workspace>/.agent-teams/<teamId>/team.json`）里新 `completed` 的任务，自动喂给 `eval-loop`，打通最小闭环 `执行 → 记忆 → 复用`。
+
+- **白名单 `evalStateDirs`**：只轮询显式列出的状态根目录（默认空 = 不轮询、不沉淀，旗舰示例显式开启）
+- **幂等 + 持久化**：同一 `(teamId, taskId)` 只沉淀一次；`seenFile`（默认 `~/.dsh/plugin-hub/eval-seen.json`）落盘，重启不重喂历史任务
+- **默认记忆沉淀**：写入 `~/.dsh/plugin-hub/eval-entries.jsonl`（零依赖）；可注入 `evalRemember` 接 mneme（`service.update(entry, { actor: 'autoDream' })`）
+
+```yaml
+# cordis.patch.yml 的 config（或 DEFAULT_CONFIG）
+evalLoopEnabled: true
+evalStateDirs:
+  - /Users/me/my-workspace/.agent-teams
+evalPollMs: 30000
+# 可选注入：evalGetTrajectory / evalVerify / evalRemember / evalMinConfidence / evalRequireVerification
+```
+
+```js
+// 状态工具
+plugin_hub_eval_status   // 闭环是否开启、已处理任务数、最近扫描、错误
+```
