@@ -52,7 +52,8 @@
     "./mcp-client": "./lib/mcp-client.js",
     "./skills-loader": "./lib/skills-loader.js",
     "./eval-loop": "./lib/eval-loop.js",
-    "./eval-bridge": "./lib/eval-bridge.js"
+    "./eval-bridge": "./lib/eval-bridge.js",
+    "./eval-adapters": "./lib/eval-adapters.js"
   },
   "dsh": {
     "bundle": {

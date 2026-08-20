@@ -217,3 +217,20 @@ evalPollMs: 30000
 // 状态工具
 plugin_hub_eval_status   // 闭环是否开启、已处理任务数、最近扫描、错误
 ```
+
+### 记忆沉淀接 mneme（eval-adapters）
+
+`lib/eval-adapters.js` 把闭环的依赖注入点接到**共享 tools registry** 的真实插件工具上，**不改任何被接入插件的源码**：
+
+- **④ 记忆沉淀**：探测 mneme 的 `memory_save` 工具 → 写入 mneme（`type: project`，标题 `[任务经验] …`，tags 带 `eval-loop` + 任务 id，source 记录 `eval-loop:autoDream:<taskId>` 溯源）；mneme 未装配或调用失败 → **自动回退本地 JSONL**（`~/.dsh/plugin-hub/eval-entries.jsonl`），不阻断闭环
+- **② 观测**：探测 trajectory-debug 的 `trajectory_*` 工具取轨迹摘要；未装 → `null`（eval-loop 自动降级）
+- **③ 验证**：`evalVerifyEnabled: true` 时探测 llm-verifier（`verifier_compare`），映射 `{ score, confidence }`；默认关闭（实验性，需后端配置）
+
+```yaml
+# 默认已接好，无需额外配置；仅需开启闭环 + 状态目录
+evalLoopEnabled: true
+evalStateDirs:
+  - /Users/me/my-workspace/.agent-teams
+# 可选：evalVerifyEnabled: true   # 接 llm-verifier 验证环节（实验性）
+# 可选注入覆盖：evalRemember / evalGetTrajectory / evalVerify
+```
