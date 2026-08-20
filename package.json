@@ -1,7 +1,7 @@
 {
   "name": "@lanbaolu/dsh-plugin-hub",
-  "version": "0.6.2",
-  "description": "DSH 插件治理平台：平台层安装器 + suite:doctor + 市场服务（目录/徽章/安装/隔离/恢复）+ 进程级启动包装器 + 超时护栏 + MCP/Skills 生态桥 + 自进化闭环（eval-bridge 接线 + 记忆沉淀接 mneme：agent-teams 任务完成 → 真实记忆沉淀）。插件错误绝不影响服务拉起。",
+  "version": "0.6.3",
+  "description": "DSH 插件治理平台：平台层安装器 + suite:doctor + 市场服务（目录/徽章/安装/隔离/恢复）+ 进程级启动包装器 + 超时护栏 + MCP/Skills/Koishi 生态桥 + 自进化闭环（agent-teams 任务完成 → 记忆沉淀）。插件错误绝不影响服务拉起。",
   "type": "module",
   "main": "./lib/index.js",
   "files": [
